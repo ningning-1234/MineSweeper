@@ -12,13 +12,19 @@ clock = pygame.time.Clock()
 
 game = MSGame()
 
+# todo
+#  generate mines after first click
+#  reveal empty patch at once
+#  add game over
+
 while (run):
-    for event in pygame.event.get():
+    events = pygame.event.get()
+    for event in events:
         if event.type == pygame.QUIT:
             run = False
 
     # t1.update()
-    game.update()
+    game.update(events)
 
     #_____Draw_____
     window.fill(BG_COLOR)
