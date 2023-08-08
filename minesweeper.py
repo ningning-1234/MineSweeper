@@ -5,7 +5,8 @@ from settings import *
 
 cover_img = pygame.image.load('assets/cover.png')
 pressed_img = pygame.image.load('assets/cover_pressed.png')
-flag_img = pygame.image.load('assets/flag.png')
+flag_img1 = pygame.image.load('assets/flag1.png')
+flag_img2 = pygame.image.load('assets/flag2.png')
 mine_img = pygame.image.load('assets/mine.png')
 
 draw_cover = False
@@ -136,7 +137,7 @@ class Tile(pygame.sprite.Sprite):
         if (self.cover and draw_cover):
             self.image.blit(cover_img, (0, 0))
         if (self.flagged and draw_cover):
-            self.image.blit(flag_img, (0, 0))
+            self.image.blit(flag_img1, (0, 0))
         if (self.rect.collidepoint((mx, my))):
             pygame.draw.rect(self.image, (200, 200, 200), (0, 0, TILE_SIZE, TILE_SIZE), 3)
         else:
