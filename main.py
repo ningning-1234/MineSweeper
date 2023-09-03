@@ -14,7 +14,6 @@ game = MSGame()
 
 # todo
 #  generate mines after first click
-#  reveal empty patch at once
 #  add game over
 
 while (run):

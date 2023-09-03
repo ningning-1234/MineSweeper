@@ -3,11 +3,20 @@ from random import randint
 import pygame
 from settings import *
 
+#images
 cover_img = pygame.image.load('assets/cover.png')
 pressed_img = pygame.image.load('assets/cover_pressed.png')
 flag_img1 = pygame.image.load('assets/flag1.png')
 flag_img2 = pygame.image.load('assets/flag2.png')
 mine_img = pygame.image.load('assets/mine.png')
+
+#numbers
+pygame.font.init()
+adj_mines_font = pygame.font.Font('freesansbold.ttf', 40)
+adj_mines_text = []
+for i in range(1, 9):
+    adj_mines_text.append(adj_mines_font.render(str(i), False, (0, 0, 0)))
+
 
 draw_cover = False
 
@@ -20,15 +29,19 @@ class MSGame:
         self.total_mines = 0
         self.flag_count = 0
 
-        self.generate()
+        self.set_up_grid()
 
-    def generate(self):
+        # self.generate()
+
+    def set_up_grid(self):
         for tiles_x in range(GRID_WIDTH):
             self.tile_lst.append([])
             for tiles_y in range(GRID_HEIGHT):
                 t=Tile(self, (tiles_x, tiles_y))
                 self.tile_lst[tiles_x].append(t)
                 self.tile_grp.add(t)
+
+    def generate(self, click_pos = (0,0)):
         self.total_mines = 0
         for tiles in range(0, round(GRID_WIDTH * GRID_HEIGHT /4)):
             x_pos = randint(0, GRID_WIDTH - 1)
@@ -46,7 +59,6 @@ class MSGame:
                 adj = mine_tile.get_adj_tiles()
                 for t in adj:
                     t.adj_mines += 1
-
             print(self.total_mines)
 
     def update(self, events):
@@ -95,9 +107,35 @@ class Tile(pygame.sprite.Sprite):
         return tile_lst
 
     def uncover(self):
+        if(self.flagged):
+            return
         self.cover = False
         if(self.mine):
             print('Gameover')
+        elif(self.adj_mines == 0):
+            for tile in range(0, len(self.get_adj_tiles())):
+                if(self.get_adj_tiles()[tile].cover == True):
+                    self.get_adj_tiles()[tile].uncover()
+
+    def force_uncover(self):
+        if(self.cover):
+            self.uncover()
+            return
+        if(self.adj_mines != 0):
+            adj_flags = 0
+            for tile in range(0, len(self.get_adj_tiles())):
+                if(self.get_adj_tiles()[tile].flagged == True):
+                    adj_flags += 1
+            print(adj_flags)
+            if(self.adj_mines == adj_flags):
+                print('test2')
+                for tile in range(0, len(self.get_adj_tiles())):
+                    if (self.get_adj_tiles()[tile].cover == True):
+                        self.get_adj_tiles()[tile].uncover()
+        # check that there are at least one adj mine
+        # check that the right amount of adjacent tiles have been flagged
+
+
 
     def flag(self):
         if(self.flagged==False):
@@ -111,14 +149,15 @@ class Tile(pygame.sprite.Sprite):
         mouse_pos = pygame.mouse.get_pos()
         mx = mouse_pos[0] - self.game.grid_pos[0]
         my = mouse_pos[1] - self.game.grid_pos[1]
-
         if (self.rect.collidepoint((mx, my))):
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if(event.button==1 and self.flagged==False):
+                    if(event.button==1):
                         self.uncover()
-                    if (event.button==3 and self.cover==True):
+                    if(event.button==3 and self.cover==True):
                         self.flag()
+                    if(event.button==2):
+                        self.force_uncover()
         self.draw()
 
         # print('tile update')
@@ -131,9 +170,7 @@ class Tile(pygame.sprite.Sprite):
         if (self.mine):
             self.image.blit(mine_img, (0, 0))
         elif(self.adj_mines != 0):
-            adj_mines = pygame.font.Font('freesansbold.ttf', 40)
-            text = adj_mines.render(str(self.adj_mines), False, (0, 0, 0))
-            self.image.blit(text, (0, 0))
+            self.image.blit(adj_mines_text[self.adj_mines-1], (0, 0))
         if (self.cover and draw_cover):
             self.image.blit(cover_img, (0, 0))
         if (self.flagged and draw_cover):
