@@ -13,8 +13,10 @@ clock = pygame.time.Clock()
 game = MSGame()
 
 # todo
-#  generate mines after first click
 #  add game over
+#  add second flag type:
+#   prevents setting off mines but doesn't decrease mine count or force uncover
+#  don't generate mines in corners
 
 while (run):
     events = pygame.event.get()

@@ -28,10 +28,11 @@ class MSGame:
         self.tile_lst = []
         self.total_mines = 0
         self.flag_count = 0
+        self.first_click = True
 
         self.set_up_grid()
 
-        # self.generate()
+        #self.generate()
 
     def set_up_grid(self):
         for tiles_x in range(GRID_WIDTH):
@@ -42,17 +43,26 @@ class MSGame:
                 self.tile_grp.add(t)
 
     def generate(self, click_pos = (0,0)):
+        print(click_pos)
         self.total_mines = 0
-        for tiles in range(0, round(GRID_WIDTH * GRID_HEIGHT /4)):
+        for tiles in range(0, round(GRID_WIDTH * GRID_HEIGHT / 4)):
             x_pos = randint(0, GRID_WIDTH - 1)
             y_pos = randint(0, GRID_WIDTH - 1)
             try_count = 20
-            while(self.tile_lst[x_pos][y_pos].mine == True and try_count>0):
-                x_pos = randint(0, GRID_WIDTH-1)
-                y_pos = randint(0, GRID_WIDTH-1)
-                try_count -= 1
+            # generate mines
+            while(try_count>0):
+                valid_tile = True
+                if(abs(click_pos[0]-x_pos) <= 2 and abs(click_pos[1]-y_pos) <= 2):
+                    valid_tile = False
+                elif(self.tile_lst[x_pos][y_pos].mine == True):
+                    valid_tile = False
+                if(valid_tile == False):
+                    try_count -= 1
+                    x_pos = randint(0, GRID_WIDTH - 1)
+                    y_pos = randint(0, GRID_WIDTH - 1)
+                else:
+                    break
             if(try_count>0):
-                #generate mine
                 mine_tile = self.tile_lst[x_pos][y_pos]
                 mine_tile.mine = True
                 self.total_mines += 1
@@ -82,7 +92,7 @@ class MSGame:
 # control everything game related
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, game, grid_pos, color = (250,75,75)):
+    def __init__(self, game, grid_pos, color = (110,110,110)):
         super().__init__()
         self.game = game
         self.image = pygame.Surface([TILE_SIZE, TILE_SIZE])
@@ -128,7 +138,6 @@ class Tile(pygame.sprite.Sprite):
                     adj_flags += 1
             print(adj_flags)
             if(self.adj_mines == adj_flags):
-                print('test2')
                 for tile in range(0, len(self.get_adj_tiles())):
                     if (self.get_adj_tiles()[tile].cover == True):
                         self.get_adj_tiles()[tile].uncover()
@@ -152,6 +161,9 @@ class Tile(pygame.sprite.Sprite):
         if (self.rect.collidepoint((mx, my))):
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.game.first_click:
+                        self.game.first_click = False
+                        self.game.generate(self.grid_pos)
                     if(event.button==1):
                         self.uncover()
                     if(event.button==3 and self.cover==True):
